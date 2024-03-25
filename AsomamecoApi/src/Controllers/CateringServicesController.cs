@@ -21,16 +21,16 @@ namespace src.Controllers
         // to return 204, use NoContent() instead of Ok(null)
 
         [HttpGet]
-        public async Task<ActionResult<PagedResult<CateringService>>> GetCateringServices(int pageNumber = 1, int pageSize = 10)
+        public async Task<ActionResult<PagedResult<CateringService>>> GetCateringServices(int pageNumber = 1, int pageSize = 10, string searchTerm = null, string orderBy = null)
         {
             try
             {
-                var list = await _cateringserviceService.GetAll(pageNumber, pageSize).ConfigureAwait(false);
+                var list = await _cateringserviceService.GetAll(pageNumber, pageSize, searchTerm, orderBy).ConfigureAwait(false);
 
                 if(list == null)
                     return NoContent();
 
-                var total = await _cateringserviceService.GetCount().ConfigureAwait(false);
+                var total = await _cateringserviceService.GetCount(searchTerm).ConfigureAwait(false);
                 var totalPages = (int)Math.Ceiling((double)total / (double)pageSize);
 
                 var result = new PagedResult<CateringService>
@@ -77,6 +77,11 @@ namespace src.Controllers
                 if (!ModelState.IsValid)
                     return BadRequest(new { success = false, status = 400, message = "Invalid Catering Service" });
 
+                var catering_serviceByEmail = await _cateringserviceService.GetByEmail(catering_service.Email).ConfigureAwait(false);
+
+                if (catering_serviceByEmail != null)
+                    return BadRequest(new { success = false, status = 400, message = "Email already exists" });
+
                 var response = await _cateringserviceService.Create(catering_service).ConfigureAwait(false);
 
                 return response != null ? CreatedAtAction(nameof(GetCateringServiceById), new { id = response.Id }, response) : StatusCode(StatusCodes.Status500InternalServerError, "Failed to create Catering Service");
@@ -87,18 +92,26 @@ namespace src.Controllers
             }
         }
 
-        [HttpPut]
-        public async Task<ActionResult<CateringService>> UpdateCateringService([FromBody] CateringService catering_service)
+        [HttpPut("{id}")]
+        public async Task<ActionResult<CateringService>> UpdateCateringService(int id, [FromBody] CateringService catering_service)
         {
             try
             {
+                if (id <= 0)
+                    return BadRequest(new { success = false, status = 400, message = "Invalid ID" });
+
                 if (catering_service == null)
                     return BadRequest(new { success = false, status = 400, message = "Invalid Catering Service" });
 
                 if (!ModelState.IsValid)
                     return BadRequest(new { success = false, status = 400, message = "Invalid Catering Service" });
 
-                var response = await _cateringserviceService.Update(catering_service).ConfigureAwait(false);
+                var catering_serviceByEmail = await _cateringserviceService.GetByEmail(catering_service.Email).ConfigureAwait(false);
+
+                if (catering_serviceByEmail != null && catering_serviceByEmail.Id != catering_service.Id)
+                    return BadRequest(new { success = false, status = 400, message = "Email already exists" });
+
+                var response = await _cateringserviceService.Update(id, catering_service).ConfigureAwait(false);
 
                 return response != null ? AcceptedAtAction(nameof(GetCateringServiceById), new { id = response.Id }, response) : StatusCode(StatusCodes.Status500InternalServerError, "Failed to update Catering Service");
             }

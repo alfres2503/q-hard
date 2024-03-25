@@ -15,17 +15,17 @@ using System.Threading.Tasks;
 
 namespace test.Controllers
 {
-    public class CateringServiceControllerTests
+    public class AssociatesControllerTests
     {
         private readonly IFixture _fixture;
-        private readonly Mock<ICateringServiceService> _serviceMock;
-        private readonly CateringServicesController _controller;
+        private readonly Mock<IAssociateService> _serviceMock;
+        private readonly AssociatesController _controller;
 
-        public CateringServiceControllerTests()
+        public AssociatesControllerTests()
         {
             _fixture = new Fixture();
-            _serviceMock = _fixture.Freeze<Mock<ICateringServiceService>>();
-            _controller = new CateringServicesController(_serviceMock.Object);
+            _serviceMock = _fixture.Freeze<Mock<IAssociateService>>();
+            _controller = new AssociatesController(_serviceMock.Object);
         }
 
         // Test Get All
@@ -33,16 +33,16 @@ namespace test.Controllers
         public async Task GetAll_ShouldReturnOkResponse_WhenDataFound()
         {
             // Arrange
-            var cateringserviceMock = _fixture.CreateMany<CateringService>(50).ToList();
+            var AssociatesMock = _fixture.CreateMany<Associate>(50).ToList();
 
-            _serviceMock.Setup(service => service.GetAll(1, 10,null,null)).ReturnsAsync(cateringserviceMock);
+            _serviceMock.Setup(service => service.GetAll(1, 10, null, null)).ReturnsAsync(AssociatesMock);
 
             // Act
-            var result = await _controller.GetCateringServices().ConfigureAwait(false);
+            var result = await _controller.GetAssociates().ConfigureAwait(false);
 
             // Assert
             result.Should().NotBeNull();
-            result.Should().BeAssignableTo<ActionResult<PagedResult<CateringService>>>();
+            result.Should().BeAssignableTo<ActionResult<PagedResult<Associate>>>();
             result.Result.Should().BeOfType<OkObjectResult>();
             result.Result.As<OkObjectResult>().Value
                 .Should()
@@ -55,10 +55,10 @@ namespace test.Controllers
         public async Task GetAll_ShouldReturnNoContent_WhenNoDataFound()
         {
             // Arrange
-            _serviceMock.Setup(service => service.GetAll(1, 10, null, null)).ReturnsAsync((List<CateringService>)null);
+            _serviceMock.Setup(service => service.GetAll(1, 10, null, null)).ReturnsAsync((List<Associate>)null);
 
             // Act
-            var result = await _controller.GetCateringServices().ConfigureAwait(false);
+            var result = await _controller.GetAssociates().ConfigureAwait(false);
 
             // Assert
             result.Should().NotBeNull();
@@ -74,7 +74,7 @@ namespace test.Controllers
             _serviceMock.Setup(service => service.GetAll(1, 10, null, null)).ThrowsAsync(new Exception("Some error"));
 
             // Act
-            var result = await _controller.GetCateringServices().ConfigureAwait(false);
+            var result = await _controller.GetAssociates().ConfigureAwait(false);
 
             // Assert
             result.Should().NotBeNull();
@@ -88,21 +88,21 @@ namespace test.Controllers
         public async Task GetByID_ShouldReturnOkResponse_WhenValidInput()
         {
             // Arrange
-            var cateringserviceMock = _fixture.Create<CateringService>();
+            var AssociateMock = _fixture.Create<Associate>();
             var id = _fixture.Create<int>();
-            _serviceMock.Setup(service => service.GetByID(id)).ReturnsAsync(cateringserviceMock);
+            _serviceMock.Setup(service => service.GetByID(id)).ReturnsAsync(AssociateMock);
 
             // Act
-            var result = await _controller.GetCateringServiceById(id).ConfigureAwait(false);
+            var result = await _controller.GetAssociateById(id).ConfigureAwait(false);
 
             // Assert
             result.Should().NotBeNull();
-            result.Should().BeAssignableTo<ActionResult<CateringService>>();
+            result.Should().BeAssignableTo<ActionResult<Associate>>();
             result.Result.Should().BeOfType<OkObjectResult>();
             result.Result.As<OkObjectResult>().Value
                 .Should()
                 .NotBeNull()
-                .And.BeOfType(cateringserviceMock.GetType());
+                .And.BeOfType(AssociateMock.GetType());
             _serviceMock.Verify(service => service.GetByID(id), Times.Once);
         }
 
@@ -110,12 +110,12 @@ namespace test.Controllers
         public async Task GetByID_ShouldReturnNoContent_WhenNoDataFound()
         {
             // Arrange
-            CateringService response = null;
+            Associate response = null;
             var id = _fixture.Create<int>();
             _serviceMock.Setup(service => service.GetByID(id)).ReturnsAsync(response);
 
             // Act
-            var result = await _controller.GetCateringServiceById(id).ConfigureAwait(false);
+            var result = await _controller.GetAssociateById(id).ConfigureAwait(false);
 
             // Assert
             result.Should().NotBeNull();
@@ -130,7 +130,7 @@ namespace test.Controllers
             var id = 0;
 
             // Act
-            var result = await _controller.GetCateringServiceById(id).ConfigureAwait(false);
+            var result = await _controller.GetAssociateById(id).ConfigureAwait(false);
 
             // Assert
             result.Should().NotBeNull();
@@ -145,7 +145,7 @@ namespace test.Controllers
             var id = -1;
 
             // Act
-            var result = await _controller.GetCateringServiceById(id).ConfigureAwait(false);
+            var result = await _controller.GetAssociateById(id).ConfigureAwait(false);
 
             // Assert
             result.Should().NotBeNull();
@@ -162,7 +162,7 @@ namespace test.Controllers
             _serviceMock.Setup(service => service.GetByID(id)).ThrowsAsync(new Exception("Some error"));
 
             // Act
-            var result = await _controller.GetCateringServiceById(id).ConfigureAwait(false);
+            var result = await _controller.GetAssociateById(id).ConfigureAwait(false);
 
             // Assert
             result.Should().NotBeNull();
@@ -176,16 +176,16 @@ namespace test.Controllers
         public async Task Create_ShouldReturnCreatedResponse_WhenValidInput()
         {
             // Arrange
-            var request = _fixture.Create<CateringService>();
-            var response = _fixture.Create<CateringService>();
+            var request = _fixture.Create<Associate>();
+            var response = _fixture.Create<Associate>();
             _serviceMock.Setup(service => service.Create(request)).ReturnsAsync(response);
 
             // Act
-            var result = await _controller.CreateCateringService(request).ConfigureAwait(false);
+            var result = await _controller.CreateAssociate(request).ConfigureAwait(false);
 
             // Assert
             result.Should().NotBeNull();
-            result.Should().BeAssignableTo<ActionResult<CateringService>>();
+            result.Should().BeAssignableTo<ActionResult<Associate>>();
             result.Result.Should().BeOfType<CreatedAtActionResult>();
 
             _serviceMock.Verify(service => service.Create(request), Times.Once);    
@@ -195,11 +195,11 @@ namespace test.Controllers
         public async Task Create_ShouldReturnBadRequest_WhenModelStateIsInvalid()
         {
             // Arrange
-            var request = _fixture.Create<CateringService>();
+            var request = _fixture.Create<Associate>();
             _controller.ModelState.AddModelError("Name", "Name is required");
 
             // Act
-            var result = await _controller.CreateCateringService(request).ConfigureAwait(false);
+            var result = await _controller.CreateAssociate(request).ConfigureAwait(false);
 
             // Assert
             result.Should().NotBeNull();
@@ -211,10 +211,10 @@ namespace test.Controllers
         public async Task Create_ShouldReturnBadRequest_WhenInputIsNull()
         {
             // Arrange
-            CateringService request = null;
+            Associate request = null;
 
             // Act
-            var result = await _controller.CreateCateringService(request).ConfigureAwait(false);
+            var result = await _controller.CreateAssociate(request).ConfigureAwait(false);
 
             // Assert
             result.Should().NotBeNull();
@@ -226,11 +226,11 @@ namespace test.Controllers
         public async Task Create_ShouldReturnInternalServerError_WhenExceptionThrown()
         {
             // Arrange
-            var request = _fixture.Create<CateringService>();
+            var request = _fixture.Create<Associate>();
             _serviceMock.Setup(service => service.Create(request)).ThrowsAsync(new Exception("Some error"));
 
             // Act
-            var result = await _controller.CreateCateringService(request).ConfigureAwait(false);
+            var result = await _controller.CreateAssociate(request).ConfigureAwait(false);
 
             // Assert
             result.Should().NotBeNull();
@@ -244,16 +244,16 @@ namespace test.Controllers
         public async Task Update_ShouldReturnAcceptedAtAction_WhenValidInput()
         {
             // Arrange
-            var request = _fixture.Create<CateringService>();
-            var response = _fixture.Create<CateringService>();
+            var request = _fixture.Create<Associate>();
+            var response = _fixture.Create<Associate>();
             _serviceMock.Setup(service => service.Update(request.Id, request)).ReturnsAsync(response);
 
             // Act
-            var result = await _controller.UpdateCateringService(request.Id, request).ConfigureAwait(false);
+            var result = await _controller.UpdateAssociate(request.Id, request).ConfigureAwait(false);
 
             // Assert
             result.Should().NotBeNull();
-            result.Should().BeAssignableTo<ActionResult<CateringService>>();
+            result.Should().BeAssignableTo<ActionResult<Associate>>();
             result.Result.Should().BeOfType<AcceptedAtActionResult>();
 
             _serviceMock.Verify(service => service.Update(request.Id, request), Times.Once);
@@ -263,11 +263,11 @@ namespace test.Controllers
         public async Task Update_ShouldReturnBadRequest_WhenModelStateIsInvalid()
         {
             // Arrange
-            var request = _fixture.Create<CateringService>();
+            var request = _fixture.Create<Associate>();
             _controller.ModelState.AddModelError("Name", "Name is required");
 
             // Act
-            var result = await _controller.UpdateCateringService(request.Id, request).ConfigureAwait(false);
+            var result = await _controller.UpdateAssociate(request.Id, request).ConfigureAwait(false);
 
             // Assert
             result.Should().NotBeNull();
@@ -279,10 +279,10 @@ namespace test.Controllers
         public async Task Update_ShouldReturnBadRequest_WhenInputIsNull()
         {
             // Arrange
-            CateringService request = null;
+            Associate request = null;
 
             // Act
-            var result = await _controller.UpdateCateringService(request.Id, request).ConfigureAwait(false);
+            var result = await _controller.UpdateAssociate(1, request).ConfigureAwait(false);
 
             // Assert
             result.Should().NotBeNull();
@@ -294,11 +294,11 @@ namespace test.Controllers
         public async Task Update_ShouldReturnInternalServerError_WhenExceptionThrown()
         {
             // Arrange
-            var request = _fixture.Create<CateringService>();
+            var request = _fixture.Create<Associate>();
             _serviceMock.Setup(service => service.Update(request.Id, request)).ThrowsAsync(new Exception("Some error"));
 
             // Act
-            var result = await _controller.UpdateCateringService(request.Id, request).ConfigureAwait(false);
+            var result = await _controller.UpdateAssociate(request.Id, request).ConfigureAwait(false);
 
             // Assert
             result.Should().NotBeNull();
@@ -313,7 +313,7 @@ namespace test.Controllers
         {
             // Arrange
             var id = _fixture.Create<int>();
-            var response = _fixture.Create<CateringService>();
+            var response = _fixture.Create<Associate>();
             _serviceMock.Setup(service => service.ChangeState(id)).ReturnsAsync(response);
 
             // Act
@@ -321,7 +321,7 @@ namespace test.Controllers
 
             // Assert
             result.Should().NotBeNull();
-            result.Should().BeAssignableTo<ActionResult<CateringService>>();
+            result.Should().BeAssignableTo<ActionResult<Associate>>();
             result.Result.Should().BeOfType<AcceptedAtActionResult>();
 
             _serviceMock.Verify(service => service.ChangeState(id), Times.Once);

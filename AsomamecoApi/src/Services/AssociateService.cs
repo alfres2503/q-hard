@@ -12,9 +12,9 @@ namespace src.Services
             _AssociateRepository = AssociateRepository;
         }
 
-        public async Task<IEnumerable<Associate>> GetAll(int pageNumber, int pageSize)
+        public async Task<IEnumerable<Associate>> GetAll(int pageNumber, int pageSize, string searchTerm, string orderBy)
         {
-            try { return await _AssociateRepository.GetAll(pageNumber, pageSize).ConfigureAwait(false); }
+            try { return await _AssociateRepository.GetAll(pageNumber, pageSize, searchTerm, orderBy).ConfigureAwait(false); }
             catch (Exception ex)
             {
                 throw new Exception($"An error occurred: {ex.Message}", ex);
@@ -22,9 +22,9 @@ namespace src.Services
             
         }
 
-        public async Task<int> GetCount()
+        public async Task<int> GetCount(string searchTerm)
         {
-            try { return await _AssociateRepository.GetCount().ConfigureAwait(false); }
+            try { return await _AssociateRepository.GetCount(searchTerm).ConfigureAwait(false); }
             catch (Exception ex)
             {
                 throw new Exception($"An error occurred: {ex.Message}", ex);
@@ -57,9 +57,9 @@ namespace src.Services
             }
         }
 
-        public async Task<Associate> Update(Associate associate)
+        public async Task<Associate> Update(int id, Associate associate)
         {
-            try { return await _AssociateRepository.Update(associate); }
+            try { return await _AssociateRepository.Update(id, associate); }
             catch (Exception ex)
             {
                 throw new Exception($"An error occurred: {ex.Message}", ex);
@@ -78,6 +78,15 @@ namespace src.Services
         public async Task<Associate> ChangeState(int id)
         {
             try { return await _AssociateRepository.ChangeState(id); }
+            catch (Exception ex)
+            {
+                throw new Exception($"An error occurred: {ex.Message}", ex);
+            }
+        }
+
+        public async Task<Associate> GetByIdCard(string idCard)
+        {
+            try { return await _AssociateRepository.GetByIdCard(idCard); }
             catch (Exception ex)
             {
                 throw new Exception($"An error occurred: {ex.Message}", ex);

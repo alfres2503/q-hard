@@ -21,16 +21,16 @@ namespace src.Controllers
         // to return 204, use NoContent() instead of Ok(null)
 
         [HttpGet]
-        public async Task<ActionResult<PagedResult<Associate>>> GetAssociates(int pageNumber = 1, int pageSize = 10)
+        public async Task<ActionResult<PagedResult<Associate>>> GetAssociates(int pageNumber = 1, int pageSize = 10, string searchTerm = null, string orderBy = null)
         {
             try
             {
-                var list = await _associateService.GetAll(pageNumber, pageSize).ConfigureAwait(false);
+                var list = await _associateService.GetAll(pageNumber, pageSize, searchTerm, orderBy).ConfigureAwait(false);
 
                 if(list == null)
                     return NoContent();
 
-                var total = await _associateService.GetCount().ConfigureAwait(false);
+                var total = await _associateService.GetCount(searchTerm).ConfigureAwait(false);
                 var totalPages = (int)Math.Ceiling((double)total / (double)pageSize);
 
                 var result = new PagedResult<Associate>
@@ -72,14 +72,25 @@ namespace src.Controllers
             try
             {
                 if (associate == null)
-                    return BadRequest(new { success = false, status = 400, message = "Invalid Associate" });
+                    return BadRequest(new { success = false, status = 400, message = "Invalid associate" });
 
                 if (!ModelState.IsValid)
-                    return BadRequest(new { success = false, status = 400, message = "Invalid Associate" });
+                    return BadRequest(new { success = false, status = 400, message = "Invalid associate" });
+
+                var associateByEmail = await _associateService.GetByEmail(associate.Email).ConfigureAwait(false);
+
+                if (associateByEmail != null)
+                    return BadRequest(new { success = false, status = 400, message = "Email already exists" });
+
+                var associateByIDCard = await _associateService.GetByIdCard(associate.IdCard).ConfigureAwait(false);
+
+                if (associateByIDCard != null)
+                    return BadRequest(new { success = false, status = 400, message = "ID Card already exists" });
 
                 var response = await _associateService.Create(associate).ConfigureAwait(false);
 
-                return response != null ? CreatedAtAction(nameof(GetAssociateById), new { id = response.Id }, response) : StatusCode(StatusCodes.Status500InternalServerError, "Failed to create Associate");
+                return response != null ? CreatedAtAction(nameof(GetAssociateById), new { id = response.Id }, response) : StatusCode(StatusCodes.Status500InternalServerError, "Failed to create associate");
+
             }
             catch (Exception ex)
             {
@@ -87,20 +98,34 @@ namespace src.Controllers
             }
         }
 
-        [HttpPut]
-        public async Task<ActionResult<Associate>> UpdateAssociate([FromBody] Associate associate)
+        [HttpPut("{id}")]
+        public async Task<ActionResult<Associate>> UpdateAssociate(int id, [FromBody] Associate associate)
         {
             try
             {
+                if (id <= 0)
+                    return BadRequest(new { success = false, status = 400, message = "Invalid ID" });
+
                 if (associate == null)
-                    return BadRequest(new { success = false, status = 400, message = "Invalid Associate" });
+                    return BadRequest(new { success = false, status = 400, message = "Invalid associate" });
 
                 if (!ModelState.IsValid)
-                    return BadRequest(new { success = false, status = 400, message = "Invalid Associate" });
+                    return BadRequest(new { success = false, status = 400, message = "Invalid associate" });
 
-                var response = await _associateService.Update(associate).ConfigureAwait(false);
+                var memberByEmail = await _associateService.GetByEmail(associate.Email).ConfigureAwait(false);
 
-                return response != null ? AcceptedAtAction(nameof(GetAssociateById), new { id = response.Id }, response) : StatusCode(StatusCodes.Status500InternalServerError, "Failed to update Associate");
+                if (memberByEmail != null && memberByEmail.Id != associate.Id)
+                    return BadRequest(new { success = false, status = 400, message = "Email already exists" });
+
+                var memberByIDCard = await _associateService.GetByIdCard(associate.IdCard).ConfigureAwait(false);
+
+                if (memberByIDCard != null && memberByIDCard.Id != associate.Id)
+                    return BadRequest(new { success = false, status = 400, message = "ID Card already exists" });
+
+                var response = await _associateService.Update(id, associate).ConfigureAwait(false);
+
+                return response != null ? AcceptedAtAction(nameof(GetAssociateById), new { id = response.Id }, response) : StatusCode(StatusCodes.Status500InternalServerError, "Failed to update associate");
+
             }
             catch (Exception ex)
             {

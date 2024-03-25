@@ -28,32 +28,32 @@ namespace test.Services
             // Arrange
             var cateringserviceMock = _fixture.CreateMany<CateringService>(50).ToList();
 
-            _repositoryMock.Setup(repo => repo.GetAll(1, 10)).ReturnsAsync(cateringserviceMock);
+            _repositoryMock.Setup(repo => repo.GetAll(1, 10, null, null)).ReturnsAsync(cateringserviceMock);
 
             // Act
-            var result = await _service.GetAll(1, 10).ConfigureAwait(false);
+            var result = await _service.GetAll(1, 10,null, null).ConfigureAwait(false);
 
             // Assert
             result.Should().NotBeNull();
             result.Should().BeAssignableTo<IEnumerable<CateringService>>();
             result.Should().BeEquivalentTo(cateringserviceMock);
-            _repositoryMock.Verify(repo => repo.GetAll(1, 10), Times.Once);
+            _repositoryMock.Verify(repo => repo.GetAll(1, 10,null,null), Times.Once);
         }
 
         [Fact]
         public async Task GetAll_ShouldReturnEmpty_WhenNoDataFound()
         {
             // Arrange
-            _repositoryMock.Setup(repo => repo.GetAll(1, 10)).ReturnsAsync(Enumerable.Empty<CateringService>());
+            _repositoryMock.Setup(repo => repo.GetAll(1, 10,null,null)).ReturnsAsync(Enumerable.Empty<CateringService>());
 
             // Act
-            var result = await _service.GetAll(1, 10).ConfigureAwait(false);
+            var result = await _service.GetAll(1, 10, null, null).ConfigureAwait(false);
 
             // Assert
             result.Should().NotBeNull();
             result.Should().BeAssignableTo<IEnumerable<CateringService>>();
             result.Should().BeEmpty();
-            _repositoryMock.Verify(repo => repo.GetAll(1, 10), Times.Once);
+            _repositoryMock.Verify(repo => repo.GetAll(1, 10, null, null), Times.Once);
         }
 
         // Test Get Total
@@ -63,14 +63,14 @@ namespace test.Services
             // Arrange
             var cateringserviceMock = _fixture.CreateMany<CateringService>(50).ToList();
 
-            _repositoryMock.Setup(repo => repo.GetCount()).ReturnsAsync(cateringserviceMock.Count);
+            _repositoryMock.Setup(repo => repo.GetCount(null)).ReturnsAsync(cateringserviceMock.Count);
 
             // Act
-            var result = await _service.GetCount().ConfigureAwait(false);
+            var result = await _service.GetCount(null).ConfigureAwait(false);
 
             // Assert
             result.Should().Be(50); // 50
-            _repositoryMock.Verify(repo => repo.GetCount(), Times.Once);
+            _repositoryMock.Verify(repo => repo.GetCount(null), Times.Once);
         }
 
         // Test Get By Email
@@ -218,16 +218,16 @@ namespace test.Services
             var cateringserviceMock = _fixture.Create<CateringService>();
             var response = _fixture.Create<CateringService>();
 
-            _repositoryMock.Setup(repo => repo.Update(cateringserviceMock)).ReturnsAsync(response);
+            _repositoryMock.Setup(repo => repo.Update(cateringserviceMock.Id, cateringserviceMock)).ReturnsAsync(response);
 
             // Act
-            var result = await _service.Update(cateringserviceMock).ConfigureAwait(false);
+            var result = await _service.Update(cateringserviceMock.Id, cateringserviceMock).ConfigureAwait(false);
 
             // Assert
             result.Should().NotBeNull();
             result.Should().BeAssignableTo<CateringService>();
             result.Should().BeEquivalentTo(response);
-            _repositoryMock.Verify(repo => repo.Update(cateringserviceMock), Times.Once);
+            _repositoryMock.Verify(repo => repo.Update(cateringserviceMock.Id, cateringserviceMock), Times.Once);
         }
 
         [Fact]
@@ -236,14 +236,14 @@ namespace test.Services
             // Arrange
             var cateringserviceMock = _fixture.Create<CateringService>();
 
-            _repositoryMock.Setup(repo => repo.Update(cateringserviceMock)).ReturnsAsync((CateringService)null);
+            _repositoryMock.Setup(repo => repo.Update(cateringserviceMock.Id, cateringserviceMock)).ReturnsAsync((CateringService)null);
 
             // Act
-            var result = await _service.Update(cateringserviceMock).ConfigureAwait(false);
+            var result = await _service.Update(cateringserviceMock.Id, cateringserviceMock).ConfigureAwait(false);
 
             // Assert
             result.Should().BeNull();
-            _repositoryMock.Verify(repo => repo.Update(cateringserviceMock), Times.Once);
+            _repositoryMock.Verify(repo => repo.Update(cateringserviceMock.Id, cateringserviceMock), Times.Once);
         }
 
         // Test Change State

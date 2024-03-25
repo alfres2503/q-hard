@@ -12,9 +12,9 @@ namespace src.Services
             _cateringserviceRepository = cateringserviceRepository;
         }
 
-        public async Task<IEnumerable<CateringService>> GetAll(int pageNumber, int pageSize)
+        public async Task<IEnumerable<CateringService>> GetAll(int pageNumber, int pageSize, string searchTerm, string orderBy)
         {
-            try { return await _cateringserviceRepository.GetAll(pageNumber, pageSize).ConfigureAwait(false); }
+            try { return await _cateringserviceRepository.GetAll(pageNumber, pageSize, searchTerm, orderBy).ConfigureAwait(false); }
             catch (Exception ex)
             {
                 throw new Exception($"An error occurred: {ex.Message}", ex);
@@ -22,9 +22,9 @@ namespace src.Services
             
         }
 
-        public async Task<int> GetCount()
+        public async Task<int> GetCount(string searchTerm)
         {
-            try { return await _cateringserviceRepository.GetCount().ConfigureAwait(false); }
+            try { return await _cateringserviceRepository.GetCount(searchTerm).ConfigureAwait(false); }
             catch (Exception ex)
             {
                 throw new Exception($"An error occurred: {ex.Message}", ex);
@@ -57,9 +57,9 @@ namespace src.Services
             }
         }
 
-        public async Task<CateringService> Update(CateringService catering_service)
+        public async Task<CateringService> Update(int id, CateringService catering_service)
         {
-            try { return await _cateringserviceRepository.Update(catering_service); }
+            try { return await _cateringserviceRepository.Update(id, catering_service); }
             catch (Exception ex)
             {
                 throw new Exception($"An error occurred: {ex.Message}", ex);

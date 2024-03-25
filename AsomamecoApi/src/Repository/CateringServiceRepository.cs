@@ -14,12 +14,55 @@ namespace src.Repository
         }
 
         // async method to get all Catering Services
-        public async Task<IEnumerable<CateringService>> GetAll(int pageNumber, int pageSize)
+        public async Task<IEnumerable<CateringService>> GetAll(int pageNumber, int pageSize, string searchTerm, string orderBy)
         {
             try
             {
-                return await _context.CateringService
-                    .OrderBy(cs => cs.Id)
+                var query = _context.CateringService.AsQueryable();
+
+                // if there is a search term, filter the query
+                if (!string.IsNullOrEmpty(searchTerm))
+                    query = query.Where(cs => cs.Name.Contains(searchTerm) || cs.Phone.Contains(searchTerm) || cs.Email.Contains(searchTerm));
+
+                // if there is an orderBy parameter, order the query
+                switch (orderBy)
+                {
+                    case "id":
+                        query = query.OrderBy(cs => cs.Id);
+                        break;
+                    case "id_desc":
+                        query = query.OrderByDescending(cs => cs.Id);
+                        break;
+                    case "name":
+                        query = query.OrderBy(cs => cs.Name);
+                        break;
+                    case "name_desc":
+                        query = query.OrderByDescending(cs => cs.Name);
+                        break;
+                    case "email":
+                        query = query.OrderBy(cs => cs.Email);
+                        break;
+                    case "email_desc":
+                        query = query.OrderByDescending(cs => cs.Email);
+                        break;
+                    case "role":
+                        query = query.OrderBy(cs => cs.Phone);
+                        break;
+                    case "role_desc":
+                        query = query.OrderByDescending(cs => cs.Phone);
+                        break;
+                    case "active":
+                        query = query.OrderBy(cs => cs.IsActive);
+                        break;
+                    case "active_desc":
+                        query = query.OrderByDescending(cs => cs.IsActive);
+                        break;
+                    default:
+                        query = query.OrderBy(cs => cs.Id);
+                        break;
+                }
+
+                return await query
                     .Skip((pageNumber - 1) * pageSize)
                     .Take(pageSize)
                     .Select(cs => new CateringService
@@ -42,10 +85,17 @@ namespace src.Repository
             }
         }
 
-        public async Task<int> GetCount()
+        public async Task<int> GetCount(string searchTerm)
         {
             try
             {
+                // if there is a search term, return the count of the filtered query
+                if (!string.IsNullOrEmpty(searchTerm))
+                {
+                    var query = _context.CateringService.AsQueryable();
+                    return await query.Where(cs => cs.Name.Contains(searchTerm) || cs.Phone.Contains(searchTerm) || cs.Email.Contains(searchTerm)).CountAsync();
+                }
+
                 return await _context.CateringService.CountAsync();
             }
             catch (DbUpdateException dbEx)
@@ -170,13 +220,26 @@ namespace src.Repository
 
         }
 
-        public async Task<CateringService> Update(CateringService catering_service)
+        public async Task<CateringService> Update(int id, CateringService catering_service)
         {
             try
             {
-                _context.Entry(catering_service).State = EntityState.Modified;
+                _context.CateringService.Find(id).Name = catering_service.Name;
+                _context.CateringService.Find(id).Phone = catering_service.Phone;
+                _context.CateringService.Find(id).Email = catering_service.Email;
+                _context.CateringService.Find(id).IsActive = catering_service.IsActive;
+
                 await _context.SaveChangesAsync();
-                return catering_service;
+                return await _context.CateringService
+                   .Select(cs => new CateringService
+                   {
+                       Id = cs.Id,
+                       Name = cs.Name,
+                       Email = cs.Email,
+                       Phone = cs.Phone,
+                       IsActive = cs.IsActive,
+                   })
+                   .FirstOrDefaultAsync(cs => cs.Id == id);
             }
             catch (DbUpdateException dbEx)
             {

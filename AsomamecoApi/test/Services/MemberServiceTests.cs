@@ -63,14 +63,14 @@ namespace test.Services
             // Arrange
             var membersMock = _fixture.CreateMany<Member>(50).ToList();
 
-            _repositoryMock.Setup(repo => repo.GetCount()).ReturnsAsync(membersMock.Count);
+            _repositoryMock.Setup(repo => repo.GetCount(null)).ReturnsAsync(membersMock.Count);
 
             // Act
-            var result = await _service.GetCount().ConfigureAwait(false);
+            var result = await _service.GetCount(null).ConfigureAwait(false);
 
             // Assert
             result.Should().Be(50); // 50
-            _repositoryMock.Verify(repo => repo.GetCount(), Times.Once);
+            _repositoryMock.Verify(repo => repo.GetCount(null), Times.Once);
         }
 
         // Test Get By Email
